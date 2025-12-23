@@ -1,0 +1,586 @@
+{
+  "name": "Lead Generation backend",
+  "nodes": [
+    {
+      "parameters": {
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "https://console.apify.com/actors/2Mdma1N6Fd0y3QEjR/input",
+          "mode": "url"
+        },
+        "customBody": "={\n    \"language\": \"en\",\n    \"locationQuery\": \"{{ $json.body.location }}\",\n    \"maxCrawledPlacesPerSearch\": {{ $json.body.numLeads }},\n    \"searchStringsArray\": [\n        \"{{ $json.body.query }}\"\n    ],\n    \"skipClosedPlaces\": false\n}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        252
+      ],
+      "id": "e2cac8e9-5076-4f52-ae2f-ad3e7cdcb13e",
+      "name": "Extract lead",
+      "credentials": {
+        "apifyApi": {
+          "id": "PUeg0A249qDjj4W6",
+          "name": "google map extactor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Datasets",
+        "datasetId": "={{ $json.defaultDatasetId }}",
+        "offset": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        252
+      ],
+      "id": "4ebc3a05-e3f6-4547-ab84-982f9f389e41",
+      "name": "Get dataset items",
+      "credentials": {
+        "apifyApi": {
+          "id": "PUeg0A249qDjj4W6",
+          "name": "google map extactor"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1a54b123-e5f0-4e78-85f6-fe7571b132bf",
+              "leftValue": "={{ $json.permanentlyClosed }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "29c06273-49b1-4f54-b256-99361358f3d0",
+              "leftValue": "={{ $json.temporarilyClosed }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -528,
+        252
+      ],
+      "id": "60211a41-c881-46aa-8b99-ac02c7b2e676",
+      "name": "Filter Active Lead"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -304,
+        252
+      ],
+      "id": "f1871ed0-540b-47cf-ba7d-7ec6720be5f7",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appaLawmlD1w2JBD6",
+          "mode": "list",
+          "cachedResultName": "KraftVen",
+          "cachedResultUrl": "https://airtable.com/appaLawmlD1w2JBD6"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFXNdvxSJ7cUlrT",
+          "mode": "list",
+          "cachedResultName": "Leadgen webapp",
+          "cachedResultUrl": "https://airtable.com/appaLawmlD1w2JBD6/tblFXNdvxSJ7cUlrT"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Business Summary": "={{ $json.output[0].content[0].text }}",
+            "Business Name": "={{ $('Loop Over Items').item.json.title }}",
+            "Business Domain": "={{ $('Loop Over Items').item.json.website }}",
+            "Phone": "={{ $('Loop Over Items').item.json.phoneUnformatted }}",
+            "Address": "={{ $('Loop Over Items').item.json.address }}",
+            "Review": "={{ $('Loop Over Items').item.json.totalScore }}",
+            "Map Details": "={{ $('Loop Over Items').item.json.url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Business Name",
+              "displayName": "Business Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Business Domain",
+              "displayName": "Business Domain",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Review",
+              "displayName": "Review",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Map Details",
+              "displayName": "Map Details",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Business Summary",
+              "displayName": "Business Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        336,
+        324
+      ],
+      "id": "3366bbf4-8ede-465f-a292-52e55c7199b7",
+      "name": "Create a record",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "AXUNsio3Nxt7axHe",
+          "name": "KraftVen"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.email }}",
+        "subject": "=Lead for - {{ $('Webhook').item.json.body.query }}",
+        "emailType": "text",
+        "message": "Kindly check your requested lead. Thanks",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        848,
+        8
+      ],
+      "id": "888c3f8b-304e-4786-90dc-3afc976e1a40",
+      "name": "Send a message",
+      "webhookId": "dd3edf68-1a7f-414c-8650-82317225f107",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qXR7EVKkUSeeKuQ9",
+          "name": "Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        8
+      ],
+      "id": "159fc0f8-cda6-4753-8cd1-6f5f6a6c5f97",
+      "name": "Combine all data"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        272,
+        112
+      ],
+      "id": "9e877778-99e8-4050-88de-df75bb4cc3f1",
+      "name": "2.5 flash",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "MqkgzDlSMPLD17bg",
+          "name": "Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant\nBased on the data prepare a proper html code to generate a pdf"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        272,
+        -96
+      ],
+      "id": "263fc9e4-9d9a-49f3-9dbf-4fcc3ca9b60e",
+      "name": "Prepare the output"
+    },
+    {
+      "parameters": {
+        "resource": "convert",
+        "operation": "Convert HTML To PDF",
+        "inputDataType": "htmlCode",
+        "htmlCode": "={{ $json.output }}"
+      },
+      "type": "n8n-nodes-pdf4me.PDF4me",
+      "typeVersion": 1,
+      "position": [
+        624,
+        8
+      ],
+      "id": "cae81e90-ae1a-49cc-bf8f-d04f23587860",
+      "name": "Create pdf",
+      "credentials": {
+        "pdf4meApi": {
+          "id": "bh70NrZSx3u2Jnau",
+          "name": "rafid"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        8
+      ],
+      "id": "b5d7d8d3-5f2c-473d-9134-c1f80a33adc0",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=# Overview\nYou are a business research assistant specialized in finding quick, relevant insights for outreach.\n\nGoal:\nResearch the business provided in the input and generate 3–4 short, high-value talking points that could be mentioned in an email or phone call.\n\n\n# Guidelines\n\nUse the Gemini chat model for research.\n\nReturn concise, single-sentence insights only — no repetition of the given business info unless you find the owner’s or manager’s name.\n\nFocus on notable facts like:\n\nReputation, reviews, or ratings\n\nNews, achievements, or awards\n\nCommunity involvement or partnerships\n\nService specialties or unique offerings\n\nKeep it brief and factual (under 20 words per item).\n\n\n\n# Example format\n\nFrank Pepe rated 8.5 by Dave Portnoy.\n\nBusiness Input JSON:\n\n{\n  \"title\": \"{{ $json.title }}\",\n  \"website\": \"{{ $json.url }}\",\n  \"phone\": \"{{ $json.phone }}\",\n  \"address\": \"{{ $json.address }}\"\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        252
+      ],
+      "id": "c62cb9f3-ee45-4138-851f-a7b22d8ede0e",
+      "name": "Business Summary",
+      "credentials": {
+        "openAiApi": {
+          "id": "gvxqjD4V20BEFL0Y",
+          "name": "Hablu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cea1fae0-62e9-487a-8763-c83b33ceed16",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1200,
+        252
+      ],
+      "id": "94cbe6e6-dc93-4870-9574-e32df9fff74f",
+      "name": "Webhook",
+      "webhookId": "cea1fae0-62e9-487a-8763-c83b33ceed16"
+    },
+    {
+      "parameters": {
+        "content": "## Extract and get the lead from google map using the apify actor\n",
+        "height": 320,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1008,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "9a14df9d-f24c-4eef-ac26-d4775333082a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Create html to make the well formated pdf\n\n",
+        "height": 480,
+        "width": 592,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        176,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "8e1e7dfd-e460-4221-ab23-60fe12da29a6",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extract lead": {
+      "main": [
+        [
+          {
+            "node": "Get dataset items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get dataset items": {
+      "main": [
+        [
+          {
+            "node": "Filter Active Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Active Lead": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Combine all data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Business Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine all data": {
+      "main": [
+        [
+          {
+            "node": "Prepare the output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2.5 flash": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Prepare the output",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare the output": {
+      "main": [
+        [
+          {
+            "node": "Create pdf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create pdf": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Business Summary": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bf00d9db-b6bf-467f-a352-6ad84a01859b",
+  "meta": {
+    "instanceId": "5f00bba974abf03cb5183d4d65f8a9645a781b04770df6a7d08284fca87d50b3"
+  },
+  "id": "8bPvHVROuW0vWfwY",
+  "tags": []
+}
